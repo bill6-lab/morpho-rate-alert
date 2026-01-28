@@ -1,0 +1,37 @@
+name: Morpho Borrow APY Alert
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # 每 5 分钟
+  workflow_dispatch:        # 允许你手动点击运行
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run alert script
+        env:
+          MORPHO_MARKET_UNIQUE_KEY: "0x29ae8cad946d861464d5e829877245a863a18157c0cde2c3524434dafa34e476"
+          MORPHO_CHAIN_ID: "1"
+          BORROW_APY_THRESHOLD: "0.07"
+          ALERT_COOLDOWN_MIN: "30"
+
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          python morpho_rate_alert.py
