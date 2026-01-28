@@ -2,8 +2,8 @@ name: Morpho Borrow APY Alert
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # 每 5 分钟
-  workflow_dispatch:        # 允许你手动点击运行
+    - cron: "*/5 * * * *"   # 每 5 分钟检查一次
+  workflow_dispatch:        # 允许手动点击运行
 
 jobs:
   check:
@@ -13,6 +13,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Restore state cache
+        uses: actions/cache@v4
+        with:
+          path: state.json
+          key: morpho-rate-state
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -28,10 +34,15 @@ jobs:
         env:
           MORPHO_MARKET_UNIQUE_KEY: "0x29ae8cad946d861464d5e829877245a863a18157c0cde2c3524434dafa34e476"
           MORPHO_CHAIN_ID: "1"
-          BORROW_APY_THRESHOLD: "0.01"
-          ALERT_COOLDOWN_MIN: "30"
+          BORROW_APY_THRESHOLD: "0.07"
 
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
           python morpho_rate_alert.py
+
+      - name: Save state cache
+        uses: actions/cache@v4
+        with:
+          path: state.json
+          key: morpho-rate-state
